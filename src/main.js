@@ -1,13 +1,19 @@
-import { createApp } from 'vue'
-import Framework7 from 'framework7/lite-bundle'
-import Framework7Vue from 'framework7-vue/bundle'
+import { createApp } from 'vue';
 
-import 'framework7/css/bundle'
-import 'framework7-icons/css/framework7-icons.css'
-import 'material-icons/iconfont/material-icons.css'
+import Framework7 from 'framework7/lite-bundle';
+import Framework7Vue, {
+  registerComponents,
+} from 'framework7-vue/bundle';
 
-import App from './App.vue'
+import 'framework7/css/bundle';
+import './css/app.css';
 
-Framework7.use(Framework7Vue)
+import App from './App.vue';
 
-createApp(App).mount('#app')
+Framework7.use(Framework7Vue);
+
+const app = createApp(App);
+
+registerComponents(app);
+
+app.mount('#app');
