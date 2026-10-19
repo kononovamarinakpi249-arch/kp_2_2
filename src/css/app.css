@@ -5,6 +5,10 @@
   --app-text: #172033;
   --app-muted: #64748b;
   --app-border: #e5eaf2;
+
+  --taskflow-primary: #2563eb;
+  --taskflow-success: #059669;
+  --taskflow-radius: 14px;
 }
 
 body {
@@ -12,15 +16,21 @@ body {
   font-family: Arial, sans-serif;
 }
 
+.page {
+  background: var(--f7-page-bg-color, #f5f6fa);
+}
+
 .page-content {
   background: var(--app-background);
 }
 
 .app-content {
-  max-width: 640px;
+  max-width: 800px;
   margin: 0 auto;
-  padding: 24px 16px 48px;
+  padding: 20px 16px 100px;
 }
+
+/* Старі стилі з попередньої роботи */
 
 .welcome-block {
   margin-bottom: 24px;
@@ -89,11 +99,6 @@ body {
   color: var(--app-muted);
 }
 
-.task-list {
-  display: grid;
-  gap: 12px;
-}
-
 .task-card {
   padding: 18px;
   border-radius: 16px;
@@ -159,25 +164,236 @@ body {
   color: var(--app-muted);
 }
 
-.info-card {
+.about-button {
+  margin-top: 24px;
+}
+
+/* Стилі КП 2/4 */
+
+.page-heading {
   margin-bottom: 24px;
+}
+
+.page-heading h1 {
+  margin: 0 0 6px;
+  font-size: 26px;
+  font-weight: 700;
+}
+
+.page-heading p {
+  margin: 0;
+  font-size: 14px;
+  color: var(--f7-text-color-secondary, #64748b);
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 28px;
+}
+
+.stat-card {
   padding: 20px;
-  background: var(--app-surface);
-  border: 1px solid var(--app-border);
-  border-radius: 16px;
+  border-radius: var(--taskflow-radius);
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.stat-card-success {
+  background: #ecfdf5;
+  color: #047857;
+}
+
+.stat-card .icon {
+  font-size: 24px;
+}
+
+.stat-value {
+  margin-top: 14px;
+  font-size: 30px;
+  font-weight: 700;
+}
+
+.stat-label {
+  margin-top: 4px;
+  font-size: 13px;
+}
+
+.section-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.section-heading h2 {
+  margin: 0;
+  font-size: 17px;
+}
+
+.section-heading .link {
+  font-size: 13px;
+}
+
+.task-list {
+  overflow: hidden;
+  border-radius: var(--taskflow-radius);
+  background: var(--f7-card-bg-color, #fff);
+}
+
+.task-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 56px;
+  padding: 12px 16px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.task-row:last-child {
+  border-bottom: 0;
+}
+
+.task-row .icon {
+  flex-shrink: 0;
+  font-size: 22px;
+  color: #94a3b8;
+}
+
+.task-row .completed-icon {
+  color: var(--taskflow-success);
+}
+
+.task-row-detail {
+  min-height: 80px;
+}
+
+.task-details {
+  min-width: 0;
+}
+
+.task-title {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.task-description {
+  margin-top: 4px;
+  font-size: 13px;
+  color: #64748b;
+}
+
+.task-status {
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--taskflow-primary);
+}
+
+.page-action {
+  margin-top: 24px;
+}
+
+.helper-text {
+  margin-top: 20px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #64748b;
+}
+
+.info-card {
+  padding: 20px;
+  margin-bottom: 14px;
+  border-radius: var(--taskflow-radius);
+  background: var(--f7-card-bg-color, #fff);
 }
 
 .info-card h2 {
-  margin: 0 0 16px;
-  font-size: 18px;
+  margin: 0 0 12px;
+  font-size: 22px;
+}
+
+.info-card h3 {
+  margin: 0 0 12px;
+  font-size: 16px;
 }
 
 .info-card p {
-  margin: 8px 0;
-  font-size: 14px;
-  color: var(--app-muted);
+  margin: 0;
+  line-height: 1.6;
 }
 
-.about-button {
-  margin-top: 24px;
+.app-logo {
+  margin-bottom: 16px;
+  color: var(--taskflow-primary);
+}
+
+.app-logo .icon {
+  font-size: 44px;
+}
+
+.technology-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.technology-list span {
+  padding: 7px 11px;
+  border-radius: 8px;
+  background: #f1f5f9;
+  color: #334155;
+  font-size: 13px;
+}
+
+.app-tabbar {
+  --f7-toolbar-height: 64px;
+}
+
+.app-tabbar .toolbar-inner {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.app-tabbar .link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-width: 0;
+  color: #64748b;
+  text-transform: none;
+}
+
+.app-tabbar .link .icon {
+  font-size: 22px;
+}
+
+.app-tab-label {
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.app-tabbar .app-link-active {
+  color: var(--taskflow-primary);
+}
+
+@media (max-width: 360px) {
+  .app-content {
+    padding: 16px 12px 90px;
+  }
+
+  .stat-card {
+    padding: 14px;
+  }
+
+  .stat-value {
+    font-size: 26px;
+  }
+
+  .app-tab-label {
+    font-size: 10px;
+  }
 }
