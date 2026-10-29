@@ -4,13 +4,11 @@ import StatusBadge from './StatusBadge.vue'
 import PriorityBadge from './PriorityBadge.vue'
 
 const props = defineProps({
-  task: {
-    type: Object,
-    required: true
-  }
+  task: { type: Object, required: true },
+  editable: { type: Boolean, default: false },
 })
 
-const emit = defineEmits(['status-change', 'priority-change'])
+const emit = defineEmits(['status-change', 'priority-change', 'edit'])
 
 const statusSequence = ['todo', 'progress', 'done']
 const prioritySequence = ['low', 'medium', 'high']
@@ -18,7 +16,7 @@ const prioritySequence = ['low', 'medium', 'high']
 const statusActionText = computed(() => ({
   todo: 'Взяти в роботу',
   progress: 'Завершити',
-  done: 'Повернути в план'
+  done: 'Повернути в план',
 })[props.task.status] || 'Змінити статус')
 
 const formattedDate = computed(() => {
@@ -26,14 +24,12 @@ const formattedDate = computed(() => {
 
   const date = new Date(`${props.task.dueDate}T12:00:00`)
 
-  if (Number.isNaN(date.getTime())) {
-    return 'Дата не визначена'
-  }
+  if (Number.isNaN(date.getTime())) return 'Дата не визначена'
 
   return new Intl.DateTimeFormat('uk-UA', {
     day: '2-digit',
     month: 'long',
-    year: 'numeric'
+    year: 'numeric',
   }).format(date)
 })
 
@@ -42,7 +38,7 @@ function changeStatus() {
 
   emit('status-change', {
     id: props.task.id,
-    status: statusSequence[(index + 1) % statusSequence.length]
+    status: statusSequence[(index + 1) % statusSequence.length],
   })
 }
 
@@ -51,7 +47,7 @@ function changePriority() {
 
   emit('priority-change', {
     id: props.task.id,
-    priority: prioritySequence[(index + 1) % prioritySequence.length]
+    priority: prioritySequence[(index + 1) % prioritySequence.length],
   })
 }
 </script>
@@ -64,9 +60,7 @@ function changePriority() {
         <StatusBadge :status="task.status" />
       </div>
 
-      <p class="tf3-card-description">
-        {{ task.description }}
-      </p>
+      <p class="tf3-card-description">{{ task.description }}</p>
 
       <div class="tf3-card-meta">
         <div class="tf3-meta-item">
@@ -94,6 +88,15 @@ function changePriority() {
           @click="changePriority"
         >
           Змінити пріоритет
+        </button>
+
+        <button
+          v-if="editable"
+          type="button"
+          class="tf3-action"
+          @click="emit('edit', task.id)"
+        >
+          Редагувати
         </button>
       </div>
     </f7-card-content>
