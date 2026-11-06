@@ -1,20 +1,24 @@
-import { createApp } from 'vue';
+import { createApp } from 'vue'
+import { createPinia } from 'pinia'
 
-import Framework7 from 'framework7/lite-bundle';
+import Framework7 from 'framework7/lite-bundle'
 import Framework7Vue, {
   registerComponents,
-} from 'framework7-vue/bundle';
+} from 'framework7-vue/bundle'
 
-import 'framework7/css/bundle';
-import 'framework7-icons/css/framework7-icons.css';
-import './css/app.css';
+import 'framework7/css/bundle'
+import 'framework7-icons/css/framework7-icons.css'
+import './css/app.css'
 
-import App from './App.vue';
+import App from './App.vue'
 
-Framework7.use(Framework7Vue);
+Framework7.use(Framework7Vue)
 
-const app = createApp(App);
+const app = createApp(App)
 
-registerComponents(app);
+// Підключення Pinia
+app.use(createPinia())
 
-app.mount('#app');
+registerComponents(app)
+
+app.mount('#app')

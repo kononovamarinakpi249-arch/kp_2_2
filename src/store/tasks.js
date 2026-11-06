@@ -1,73 +1,164 @@
-import { reactive } from 'vue'
+import { defineStore } from 'pinia'
 import initialTasks from '../data/tasks'
+import { useProjectsStore } from './projects'
 
-// Єдине реактивне сховище для HomePage і TasksPage.
-// Pinia та IndexedDB будемо використовувати в наступних роботах.
 const allowedStatuses = ['todo', 'progress', 'done']
 const allowedPriorities = ['low', 'medium', 'high']
 
-export const taskState = reactive({
-  tasks: initialTasks.map((task) => ({ ...task })),
-})
+function normalizeValues(values, projects) {
+  const requestedProject = String(values.projectId ?? 'general')
+  const projectId = projects.some((project) => project.id === requestedProject)
+    ? requestedProject
+    : 'general'
 
-function findTask(id) {
-  return taskState.tasks.find((task) => task.id === Number(id))
-}
-
-function normalizeValues(values) {
   return {
     title: String(values.title ?? '').trim(),
     description: String(values.description ?? '').trim(),
     status: allowedStatuses.includes(values.status) ? values.status : 'todo',
     priority: allowedPriorities.includes(values.priority) ? values.priority : 'medium',
-    dueDate: values.dueDate || '',
+    dueDate: String(values.dueDate ?? ''),
+    projectId,
   }
 }
 
-export function addTask(values) {
-  const taskValues = normalizeValues(values)
-  if (!taskValues.title) return false
-
-  const nextId = Math.max(0, ...taskState.tasks.map((task) => task.id)) + 1
-  taskState.tasks.unshift({ id: nextId, ...taskValues })
-  return true
+function isValidTask(values) {
+  return values.title.length >= 3 && values.title.length <= 80 &&
+    values.description.length <= 500 &&
+    (!values.dueDate || /^\d{4}-\d{2}-\d{2}$/.test(values.dueDate))
 }
 
-export function updateTask(values) {
-  const task = findTask(values.id)
-  if (!task) return false
+export const useTasksStore = defineStore('tasks', {
+  state: () => ({
+    // Старі записи без projectId належать проєкту «Загальні».
+    tasks: initialTasks.map((task) => ({
+      ...task,
+      projectId: task.projectId ?? 'general',
+    })),
+    searchText: '',
+    selectedStatus: 'all',
+    selectedPriority: 'all',
+    selectedProject: 'all',
+    sortOrder: 'newest',
+  }),
 
-  const taskValues = normalizeValues(values)
-  if (!taskValues.title) return false
+  getters: {
+    totalTasks: (state) => state.tasks.length,
 
-  Object.assign(task, taskValues)
-  return true
-}
+    completedTasks: (state) =>
+      state.tasks.filter((task) => task.status === 'done').length,
 
-export function setTaskStatus({ id, status }) {
-  if (!allowedStatuses.includes(status)) return false
+    progressTasks: (state) =>
+      state.tasks.filter((task) => task.status === 'progress').length,
 
-  const task = findTask(id)
-  if (!task) return false
+    activeTasks: (state) => {
+      const rank = { high: 3, medium: 2, low: 1 }
 
-  task.status = status
-  return true
-}
+      return state.tasks
+        .filter((task) => task.status !== 'done')
+        .sort((a, b) => rank[b.priority] - rank[a.priority] || b.id - a.id)
+        .slice(0, 3)
+    },
 
-export function setTaskPriority({ id, priority }) {
-  if (!allowedPriorities.includes(priority)) return false
+    visibleTasks: (state) => {
+      const term = state.searchText.trim().toLocaleLowerCase('uk-UA')
+      const rank = { high: 3, medium: 2, low: 1 }
 
-  const task = findTask(id)
-  if (!task) return false
+      const filtered = state.tasks.filter((task) => {
+        const text = `${task.title} ${task.description ?? ''}`
+          .toLocaleLowerCase('uk-UA')
 
-  task.priority = priority
-  return true
-}
+        return (!term || text.includes(term)) &&
+          (state.selectedStatus === 'all' || task.status === state.selectedStatus) &&
+          (state.selectedPriority === 'all' || task.priority === state.selectedPriority) &&
+          (state.selectedProject === 'all' || task.projectId === state.selectedProject)
+      })
 
-export function deleteTask(id) {
-  const index = taskState.tasks.findIndex((task) => task.id === Number(id))
-  if (index === -1) return false
+      // sort() застосовуємо до нового масиву, а не до state.tasks.
+      return filtered.sort((a, b) => {
+        if (state.sortOrder === 'title') {
+          return a.title.localeCompare(b.title, 'uk-UA') || a.id - b.id
+        }
 
-  taskState.tasks.splice(index, 1)
-  return true
-}
+        if (state.sortOrder === 'priority') {
+          return rank[b.priority] - rank[a.priority] || b.id - a.id
+        }
+
+        if (state.sortOrder === 'dueDate') {
+          return (a.dueDate || '9999-12-31').localeCompare(
+            b.dueDate || '9999-12-31',
+          ) || b.id - a.id
+        }
+
+        return b.id - a.id
+      })
+    },
+  },
+
+  actions: {
+    addTask(values) {
+      const projectStore = useProjectsStore()
+      const normalized = normalizeValues(values, projectStore.projects)
+
+      if (!isValidTask(normalized)) return false
+
+      const nextId = Math.max(0, ...this.tasks.map((task) => task.id)) + 1
+      this.tasks.unshift({ id: nextId, ...normalized })
+
+      return true
+    },
+
+    updateTask(values) {
+      const task = this.tasks.find((item) => item.id === Number(values.id))
+      if (!task) return false
+
+      const projectStore = useProjectsStore()
+      const normalized = normalizeValues(values, projectStore.projects)
+
+      if (!isValidTask(normalized)) return false
+
+      Object.assign(task, normalized)
+
+      return true
+    },
+
+    deleteTask(id) {
+      const index = this.tasks.findIndex((task) => task.id === Number(id))
+
+      if (index === -1) return false
+
+      this.tasks.splice(index, 1)
+
+      return true
+    },
+
+    setTaskStatus({ id, status }) {
+      if (!allowedStatuses.includes(status)) return false
+
+      const task = this.tasks.find((item) => item.id === Number(id))
+      if (!task) return false
+
+      task.status = status
+
+      return true
+    },
+
+    setTaskPriority({ id, priority }) {
+      if (!allowedPriorities.includes(priority)) return false
+
+      const task = this.tasks.find((item) => item.id === Number(id))
+      if (!task) return false
+
+      task.priority = priority
+
+      return true
+    },
+
+    resetFilters() {
+      this.searchText = ''
+      this.selectedStatus = 'all'
+      this.selectedPriority = 'all'
+      this.selectedProject = 'all'
+      this.sortOrder = 'newest'
+    },
+  },
+})

@@ -3,13 +3,16 @@ defineProps({
   search: { type: String, default: '' },
   status: { type: String, default: 'all' },
   priority: { type: String, default: 'all' },
+  project: { type: String, default: 'all' },
   sort: { type: String, default: 'newest' },
+  projects: { type: Array, required: true },
 })
 
 const emit = defineEmits([
   'update:search',
   'update:status',
   'update:priority',
+  'update:project',
   'update:sort',
   'reset',
 ])
@@ -57,6 +60,24 @@ const emit = defineEmits([
       </label>
 
       <label>
+        Проєкт
+        <select
+          :value="project"
+          @change="emit('update:project', $event.target.value)"
+        >
+          <option value="all">Усі проєкти</option>
+
+          <option
+            v-for="item in projects"
+            :key="item.id"
+            :value="item.id"
+          >
+            {{ item.title }}
+          </option>
+        </select>
+      </label>
+
+      <label>
         Сортування
         <select
           :value="sort"
@@ -70,7 +91,11 @@ const emit = defineEmits([
       </label>
     </div>
 
-    <button type="button" class="tf5-btn" @click="emit('reset')">
+    <button
+      type="button"
+      class="tf5-btn"
+      @click="emit('reset')"
+    >
       Скинути фільтри
     </button>
   </section>
